@@ -1,23 +1,36 @@
 # ============================================================
-# Déploiement en un clic sur Render (offre gratuite).
-#   1. Déposez ce projet dans un dépôt GitHub
-#   2. Sur render.com : New > Blueprint > sélectionnez le dépôt
-#   3. Render lit ce fichier et crée l'application + la base
+# Déploiement Render — SANS Docker (plus simple et plus rapide)
 #
-# LIMITES DE L'OFFRE GRATUITE — à connaître avant de commencer :
-#   - le service s'endort après 15 min d'inactivité (réveil ~50 s) ;
-#   - le disque est EPHEMERE : les pièces jointes sont perdues à chaque
-#     redéploiement (STOCKAGE_EPHEMERE=true l'annonce au démarrage) ;
-#   - la base gratuite expire après 30 jours.
-# Convient pour une démonstration, PAS pour vos données réelles.
+# Render installe Node, compile l'interface puis démarre le serveur.
+# Aucune image à construire : moins de choses peuvent échouer.
+#
+# PRÉREQUIS : la racine du dépôt doit contenir les dossiers
+#   client/   et   serveur/
 # ============================================================
 services:
   - type: web
     name: aifg-rh
-    runtime: docker
+    runtime: node
     plan: free
-    region: frankfurt          # le plus proche de l'Algérie
+    region: frankfurt
     healthCheckPath: /api/sante
+    buildCommand: |
+      set -e
+      echo "--- Vérification de la structure du dépôt ---"
+      test -d client   || { echo "ERREUR : dossier client/ absent du dépôt"; exit 1; }
+      test -d serveur  || { echo "ERREUR : dossier serveur/ absent du dépôt"; exit 1; }
+      echo "--- Compilation de l'interface ---"
+      cd client
+      # npm ci si le verrou est present (installation reproductible), sinon npm install.
+      if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+      npx vite build
+      cd ..
+      echo "--- Copie de l'interface dans le serveur ---"
+      mkdir -p serveur/public && cp -r client/dist/* serveur/public/
+      echo "--- Dépendances du serveur ---"
+      cd serveur
+      if [ -f package-lock.json ]; then npm ci --omit=dev --no-audit --no-fund; else npm install --omit=dev --no-audit --no-fund; fi
+    startCommand: cd serveur && node src/index.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -32,16 +45,11 @@ services:
           name: aifg-rh-base
           property: connectionString
       - key: JWT_SECRET
-        generateValue: true     # secret aléatoire généré par Render
+        generateValue: true
       - key: JWT_SECRET_RAFRAICHISSEMENT
         generateValue: true
-      - key: ORIGINE_FRONTEND
-        fromService:
-          name: aifg-rh
-          type: web
-          property: host
       - key: MDP_INITIAL_RH
-        sync: false             # à saisir dans l'interface de Render
+        sync: false
       - key: MDP_INITIAL_DIRECTION
         sync: false
       - key: EMAIL_RH
