@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 100 12% 95%;
+    --foreground: 160 12% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 12% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 12% 16%;
+    --primary: 160 41% 26%;
+    --primary-foreground: 60 20% 97%;
+    --secondary: 44 42% 88%;
+    --secondary-foreground: 160 12% 16%;
+    --muted: 100 10% 91%;
+    --muted-foreground: 160 8% 40%;
+    --accent: 44 42% 88%;
+    --accent-foreground: 160 12% 16%;
+    --destructive: 9 60% 41%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 105 10% 84%;
+    --input: 105 10% 80%;
+    --ring: 160 41% 26%;
+    --radius: 0.375rem;
+  }
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Public Sans', system-ui, sans-serif;
+    font-feature-settings: 'tnum' 1;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Archivo', system-ui, sans-serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  /* Onglet de dossier — élément signature */
+  .folder-tab {
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .stamp {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.66rem;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    padding: 2px 8px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .rule-label {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.68rem;
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

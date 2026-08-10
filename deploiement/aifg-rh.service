@@ -1,0 +1,28 @@
+# /etc/systemd/system/aifg-rh.service
+[Unit]
+Description=Registre RH AIFG — API
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=aifg
+WorkingDirectory=/opt/aifg-rh/serveur
+EnvironmentFile=/opt/aifg-rh/serveur/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+
+# Durcissement
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/aifg-rh/serveur/logs
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

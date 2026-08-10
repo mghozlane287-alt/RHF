@@ -1,0 +1,16 @@
+Serveur sans accès Internet ?
+
+Téléchargez ces fichiers depuis un poste connecté et déposez-les ICI avant
+de lancer Installer.ps1 :
+
+  nssm.exe          -> https://nssm.cc/release/nssm-2.24.zip  (dossier win64)
+
+Et installez manuellement, dans cet ordre, sur le serveur :
+  1. Node.js 22 LTS      -> https://nodejs.org
+  2. PostgreSQL 16       -> https://www.postgresql.org/download/windows/
+  3. IIS URL Rewrite     -> https://www.iis.net/downloads/microsoft/url-rewrite
+  4. IIS ARR 3.0         -> https://www.iis.net/downloads/microsoft/application-request-routing
+
+Puis lancez Installer.ps1 avec -SansHttps si le serveur n'est pas joignable
+depuis Internet (le certificat Let's Encrypt exige un accès entrant sur le port 80).
+Dans ce cas, installez un certificat interne de votre entreprise dans IIS.
