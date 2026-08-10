@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.parcel-cache
+serveur/fichiers
+serveur/public
+serveur/logs
+serveur/.env
+.env
+*.tar.gz

@@ -1,0 +1,53 @@
+# ============================================================
+# Déploiement en un clic sur Render (offre gratuite).
+#   1. Déposez ce projet dans un dépôt GitHub
+#   2. Sur render.com : New > Blueprint > sélectionnez le dépôt
+#   3. Render lit ce fichier et crée l'application + la base
+#
+# LIMITES DE L'OFFRE GRATUITE — à connaître avant de commencer :
+#   - le service s'endort après 15 min d'inactivité (réveil ~50 s) ;
+#   - le disque est EPHEMERE : les pièces jointes sont perdues à chaque
+#     redéploiement (STOCKAGE_EPHEMERE=true l'annonce au démarrage) ;
+#   - la base gratuite expire après 30 jours.
+# Convient pour une démonstration, PAS pour vos données réelles.
+# ============================================================
+services:
+  - type: web
+    name: aifg-rh
+    runtime: docker
+    plan: free
+    region: frankfurt          # le plus proche de l'Algérie
+    healthCheckPath: /api/sante
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOTE
+        value: 0.0.0.0
+      - key: MODE_DEMONSTRATION
+        value: "true"
+      - key: STOCKAGE_EPHEMERE
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aifg-rh-base
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true     # secret aléatoire généré par Render
+      - key: JWT_SECRET_RAFRAICHISSEMENT
+        generateValue: true
+      - key: ORIGINE_FRONTEND
+        fromService:
+          name: aifg-rh
+          type: web
+          property: host
+      - key: MDP_INITIAL_RH
+        sync: false             # à saisir dans l'interface de Render
+      - key: MDP_INITIAL_DIRECTION
+        sync: false
+      - key: EMAIL_RH
+        value: rh@aifg.dz
+
+databases:
+  - name: aifg-rh-base
+    plan: free
+    region: frankfurt

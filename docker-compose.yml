@@ -1,0 +1,56 @@
+# ============================================================
+# Déploiement sur n'importe quelle machine Linux (VPS, PC, serveur local).
+# Gratuit et permanent : vous n'hébergez que chez vous.
+#
+#   1. cp .env.docker.exemple .env
+#   2. Modifiez les mots de passe et les secrets dans .env
+#   3. docker compose up -d
+#   4. Ouvrez http://ADRESSE_DU_SERVEUR:3001
+# ============================================================
+services:
+  base:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aifg
+      POSTGRES_PASSWORD: ${MDP_BASE:?Definissez MDP_BASE dans .env}
+      POSTGRES_DB: aifg_rh
+    volumes:
+      - donnees:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aifg -d aifg_rh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # La base n'est jamais exposée à l'extérieur : seule l'application y accède.
+
+  application:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      base:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOTE: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgresql://aifg:${MDP_BASE}@base:5432/aifg_rh
+      JWT_SECRET: ${JWT_SECRET:?Definissez JWT_SECRET (32 caracteres minimum)}
+      JWT_SECRET_RAFRAICHISSEMENT: ${JWT_SECRET_RAFRAICHISSEMENT:?Definissez un second secret}
+      ORIGINE_FRONTEND: ${ORIGINE_FRONTEND:-http://localhost:3001}
+      EMAIL_RH: ${EMAIL_RH:-rh@aifg.dz}
+      MDP_INITIAL_RH: ${MDP_INITIAL_RH:?Definissez le mot de passe initial du RH}
+      MDP_INITIAL_DIRECTION: ${MDP_INITIAL_DIRECTION:?Definissez le mot de passe initial de la Direction}
+      DOSSIER_FICHIERS: /app/fichiers
+      SMTP_HOTE: ${SMTP_HOTE:-}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_TELEPHONE_ID: ${WHATSAPP_TELEPHONE_ID:-}
+    ports:
+      - "${PORT_PUBLIC:-3001}:3001"
+    volumes:
+      # Les pièces jointes survivent aux redémarrages et aux mises à jour.
+      - fichiers:/app/fichiers
+
+volumes:
+  donnees:
+  fichiers:
